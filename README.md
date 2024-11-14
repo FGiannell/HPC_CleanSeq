@@ -81,7 +81,7 @@ sudo pacman -S python
 To install HPC CLEANSEQ simply run the following commands:
 
 ```bash
-git clone <...>
+git clone https://github.com/FGiannell/HPC_CleanSeq.git
 cd HPC_CLEANSEQ
 python install_requirements.py
 ```
