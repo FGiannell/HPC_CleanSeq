@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decontaminazion</title>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Roboto Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+
+    <style>
+        .roboto-thin {
+            font-family: "Roboto", sans-serif;
+            font-weight: 100;
+            font-style: normal;
+        }
+        .roboto-light {
+            font-family: "Roboto", sans-serif;
+            font-weight: 300;
+            font-style: normal;
+        }
+        .roboto-regular {
+            font-family: "Roboto", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+        .roboto-medium {
+            font-family: "Roboto", sans-serif;
+            font-weight: 500;
+            font-style: normal;
+        }
+        .roboto-bold {
+            font-family: "Roboto", sans-serif;
+            font-weight: 700;
+            font-style: normal;
+        }
+        .roboto-black {
+            font-family: "Roboto", sans-serif;
+            font-weight: 900;
+            font-style: normal;
+        }
+        .roboto-thin-italic {
+            font-family: "Roboto", sans-serif;
+            font-weight: 100;
+            font-style: italic;
+        }
+        .roboto-light-italic {
+            font-family: "Roboto", sans-serif;
+            font-weight: 300;
+            font-style: italic;
+        }
+        .roboto-regular-italic {
+            font-family: "Roboto", sans-serif;
+            font-weight: 400;
+            font-style: italic;
+        }
+        .roboto-medium-italic {
+            font-family: "Roboto", sans-serif;
+            font-weight: 500;
+            font-style: italic;
+        }
+        .roboto-bold-italic {
+            font-family: "Roboto", sans-serif;
+            font-weight: 700;
+            font-style: italic;
+        }
+        .roboto-black-italic {
+            font-family: "Roboto", sans-serif;
+            font-weight: 900;
+            font-style: italic;
+        }
+
+        /* BACKGROUND EFFECT */
+        section{
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20vh;
+            background: transparent;
+            overflow: hidden;
+            z-index: -1;
+        }
+        section .air{
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: url(https://1.bp.blogspot.com/-xQUc-TovqDk/XdxogmMqIRI/AAAAAAAACvI/AizpnE509UMGBcTiLJ58BC6iViPYGYQfQCLcBGAsYHQ/s1600/wave.png);
+            background-size: 1000px 100px
+        }
+        section .air.air1{
+            animation: wave 30s linear infinite;
+            z-index: 1000;
+            opacity: 1;
+            animation-delay: 0s;
+            bottom: 0;
+        }
+        section .air.air2{
+            animation: wave2 15s linear infinite;
+            z-index: 999;
+            opacity: 0.5;
+            animation-delay: -5s;
+            bottom: 10px;
+        }
+        section .air.air3{
+            animation: wave 30s linear infinite;
+            z-index: 998;
+            opacity: 0.2;
+            animation-delay: -2s;
+            bottom: 15px;
+        }
+        section .air.air4{
+            animation: wave2 5s linear infinite;
+            z-index: 997;
+            opacity: 0.7;
+            animation-delay: -5s;
+            bottom: 20px;
+        }
+        @keyframes wave{
+            0%{
+                background-position-x: 0px; 
+            }
+            100%{
+                background-position-x: 1000px; 
+            }
+        }
+        @keyframes wave2{
+            0%{
+                background-position-x: 0px; 
+            }
+            100%{
+                background-position-x: -1000px; 
+            }
+        }
+        /* END BACKGROUND EFFECT */
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            background: rgb(2,0,36);
+            background: linear-gradient(135deg, rgba(2,0,36,1) 0%, rgba(56,102,65,1) 50%, rgba(167,201,87,1) 100%);
+            font-family: "Roboto", sans-serif;
+        }
+        h1 {
+            font-size: 4rem;
+        }
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 80vw;
+            max-height: 100vh;
+        }
+        .card {
+            border-radius: 15px !important;
+        }
+
+        #nextBtn {
+            border-color: #A7C957;
+            color: #A7C957;
+            font-weight: bold;
+        }
+        #nextBtn:hover {
+            background-color: #A7C957;
+            color: white;
+        }
+
+        #iconArrow {
+            font-size: 1.5rem;
+            color: #A7C957;
+        }
+        #nextBtn:hover #iconArrow {
+            color: white;
+        }
+
+        .not-selectable {
+            user-select: none; /* Standard */
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 class="text-light not-selectable">HPC-CleanSeq Setting Panel</h1>
+    </header>
+    
+    <main>
+        <div class="container w-100">
+            <form method="post" action="/centrifuge-form" enctype="multipart/form-data">
+                <!-- Login inputs -->
+                <div class="card shadow rounded mb-4 border">
+                    <div class="card-header py-3 bg-transparent border border-0">
+                        <h6 class="m-0 font-weight-bold text-dark text-uppercase">Insert the host inputs:</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <label for="hostname">Hostname:</label><br>
+                                <input type="text" id="hostname" name="hostname" required><br>
+                            </div>
+                            <div class="col">
+                                <label for="username">Username:</label><br>
+                                <input type="text" id="username" name="username" required><br>
+                            </div>
+                            <div class="col">
+                                <label for="password">Password:</label><br>
+                                <input type="password" id="password" name="password" required><br>
+                            </div>
+                            <div class="col">
+                                <label for="account">Execution account:</label><br>
+                                <input type="account" id="account" name="account" required><br>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <!-- Inputs -->
+                <div class="card shadow rounded mb-4 border">
+                    <div class="card-header py-3 bg-transparent border border-0">
+                        <h6 class="m-0 font-weight-bold text-dark text-uppercase">Insert input reads:</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <h4>Select the type of reads:</h4>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="readType" id="singleEndReads" value="single">
+                                    <label class="form-check-label" for="singleEndReads">
+                                        Single-end reads
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="readType" id="pairedEndReads" value="paired" checked>
+                                    <label class="form-check-label" for="pairedEndReads">
+                                        Paired-end reads
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <h4>Select the files of the reads</h4>
+                                {% with messages = get_flashed_messages() %}
+                                    {% if messages %}
+                                        <div class="alert alert-warning" role="alert">
+                                            {{ messages[0] }}
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                                <div class="mb-3">
+                                    <input class="form-control" type="file" name="readsFiles" id="formFile" multiple>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Choise of domains -->
+                <div class="card shadow rounded mb-4 border">
+                    <div class="card-header py-3 bg-transparent border border-0">
+                        <h6 class="m-0 font-weight-bold text-dark text-uppercase">Choose the domains to use in the search: </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="domains" id="checkBacteria" value="bacteria">
+                                    <label class="form-check-label" for="checkBacteria">
+                                        Bacteria
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="domains" id="checkViral" value="viral">
+                                    <label class="form-check-label" for="checkViral">
+                                        Viral
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="domains" id="checkArchaea" value="archaea">
+                                    <label class="form-check-label" for="checkArchaea">
+                                        Archaea
+                                    </label>
+                                </div>
+                            </div>
+            
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="domains" id="checkFungi" value="fungi">
+                                    <label class="form-check-label" for="checkFungi">
+                                        Fungi
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="domains" id="checkProtozoa" value="protozoa">
+                                    <label class="form-check-label" for="checkProtozoa">
+                                        Protozoa
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="domains" id="checkInvertebrate" value="invertebrate">
+                                    <label class="form-check-label" for="checkInvertebrate">
+                                        Invertebrate
+                                    </label>
+                                </div>
+                            </div>
+            
+                            <div class="col">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="domains" id="checkPlant" value="plant">
+                                    <label class="form-check-label" for="checkPlant">
+                                        Plant
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="domains" id="checkVertMammalian" value="vertebrate_mammalian">
+                                    <label class="form-check-label" for="checkVertMammalian">
+                                        Vertebrate Mammalian
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="domains" id="checkVertOther" value="vertebrate_other">
+                                    <label class="form-check-label" for="checkVertOther">
+                                        Vertebrate Other
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Submit button -->
+                <button type="submit" class="btn btn-outline-primary rounded-pill btn-lg" id="nextBtn">
+                    Next <i class="bi bi-arrow-right" id="iconArrow"></i>
+                </button>
+
+                <!-- Modal Progress Bar -->
+                <div class="modal fade" id="modalProgress" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <h6 class="stateText">State: </h6>
+                                <!-- Progress bar -->
+                                <div class="progress" style="height: 30px">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Report Found -->
+                <div class="modal fade" id="modalReport" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-body">
+                                <h6>Report found in download folder.</h6>
+                                <p>What do you want to do?</p>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-danger" id="downRepBtn">Download</button>
+                                    <button type="button" class="btn btn-success" id="analizeNewBtn">New analisys</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+            </form>
+        </div>
+        
+    </main>
+
+    <section>
+        <div class='air air1'></div>
+        <div class='air air3'></div>
+        <div class='air air2'></div>
+        <div class='air air4'></div>
+    </section>
+
+    <script>
+        $(document).ready(function() {
+            $('form').on('submit', function(event) {
+                // Stop submit of form
+                event.preventDefault();
+
+                // Check if there is already a centrifuge summary file
+                $.get('/check-report')
+                    .done(function(data) {
+                        if (data.exists == true) {
+                            $('#modalReport').modal('show');
+                        }
+                        else {
+                            // Show progress modal
+                            $('#modalProgress').modal('show');
+                            
+                            const socketProgress = io();
+
+                            // Ask the server for progress data
+                            socketProgress.emit('progress_request');
+
+                            // Change values of progress bar
+                            socketProgress.on('progress', function(data) {
+                                // Update the width of the progress bar
+                                $('.progress-bar').css('width', data.value + '%');
+                            
+                                // Update the value of aria-valuenow property of the progress bar
+                                $('.progress-bar').attr('aria-valuenow', data.value);
+                            
+                                // Update percentage inside progress bar
+                                $('.progress-bar').text(data.value + '%');
+                            
+                                // Update the text of the modal
+                                $('.stateText').text('State: ' + data.state);
+                            });
+                            
+                            // Remove the jQuery handler
+                            $('form').off('submit');
+                            // Submit the form in normal mode
+                            $('form').trigger('submit');
+                        }
+                    })
+                    .fail(function(xhr) {
+                        console.log("ERROR")
+                    });
+
+                // Handle function for download button
+                $('#downRepBtn').on('click', function() {
+                    // Start the download of the file   
+                    const newDownTab = window.open(
+                        'http://127.0.0.1:3000/download-report',
+                        '_blank'
+                    );
+                    
+                    // Close the new tab when the page is fully loaded (the rextract script has been executed)
+                    newDownTab.onload = function() {
+                        newDownTab.close()
+                    }
+                });
+
+                $('#analizeNewBtn').on('click', function() {
+                    // Close modal
+                    $('#modalReport').modal('hide');
+
+                    // Show progress modal
+                    $('#modalProgress').modal('show');
+
+                    const socketProgress = io();
+
+                    // Ask the server for progress data
+                    socketProgress.emit('progress_request');
+
+                    // Change values of progress bar
+                    socketProgress.on('progress', function(data) {
+                        // Update the width of the progress bar
+                        $('.progress-bar').css('width', data.value + '%');
+
+                        // Update the value of aria-valuenow property of the progress bar
+                        $('.progress-bar').attr('aria-valuenow', data.value);
+
+                        // Update percentage inside progress bar
+                        $('.progress-bar').text(data.value + '%');
+
+                        // Update the text of the modal
+                        $('.stateText').text('State: ' + data.state);
+                    });
+
+                    // Remove the jQuery handler
+                    $('form').off('submit');
+                    // Submit the form in normal mode
+                    $('form').trigger('submit');
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
