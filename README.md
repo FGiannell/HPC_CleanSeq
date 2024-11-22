@@ -130,7 +130,7 @@ To start the software, once all the dependencies are installed, go to the HPC_CL
 Type the following command to start the software:
 
 ```bash
-python3 HPC_CleanSeq.py
+flask --app HPC_CleanSeq run --port 3000
 ```
 
 And type the following url into your browser: 
