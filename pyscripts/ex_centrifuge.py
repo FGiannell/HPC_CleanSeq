@@ -26,46 +26,44 @@ async def buildCentrifugeScript(
         seq1 = os.path.basename(inputs[0])
         seq2 = os.path.basename(inputs[1])
 
-    script = '#!/bin/bash' + '\n\n'
-
-    # Add directories
-    script += (
-        '#SBATCH --job-name=centrifuge\n'
-        '#SBATCH --time=24:00:00\n'
-        '#SBATCH -p g100_usr_prod \n'
-        '#SBATCH -N 1\n'
-        '#SBATCH -n 48 \n'
-        '#SBATCH --mem=100G \n'
-        f'#SBATCH --account {account}\n\n'
-    )
-
-    # Add instructions
-    # 1. Build the index
-    script += (
-        'centrifuge-build -p 48 --conversion-table seqid2taxid.map '
-        '--taxonomy-tree taxonomy/nodes.dmp --name-table '
-        'taxonomy/names.dmp sequences.fna database/abv'
-        '\n'
-    )
-    # 2. Execute Centrifuge on the index
-    # 2.1 Case single-end reads
-    if len(inputs) == 1:        
-        script += (
-            f'centrifuge -x database/abv -U {seq1} '
-            '-S reports/centrifuge_output.txt -p 48'
-            '\n'
-        )
-    # 2.2 Case paired-end reads
-    elif len(inputs) == 2:  
-        script += (
-            f'centrifuge -x database/abv -1 {seq1} -2 {seq2} '
-            '-S reports/centrifuge_output.txt -p 48'
-            '\n'
-        )
-
     # Write the script file
-    with open('scripts/cen_script.sh', 'w') as file:
-        file.write(script)
+    with open('scripts/cen_script.sh', 'w', newline='\n') as file:
+        file.write('#!/bin/bash' + '\n\n')
+    
+        # Add directories
+        file.write(
+            '#SBATCH --job-name=centrifuge\n'
+            '#SBATCH --time=24:00:00\n'
+            '#SBATCH -p g100_usr_prod \n'
+            '#SBATCH -N 1\n'
+            '#SBATCH -n 48 \n'
+            '#SBATCH --mem=100G \n'
+            f'#SBATCH --account {account}\n\n'
+        )
+
+        # Add instructions
+        # 1. Build the index
+        file.write(
+            'centrifuge-build -p 48 --conversion-table seqid2taxid.map '
+            '--taxonomy-tree taxonomy/nodes.dmp --name-table '
+            'taxonomy/names.dmp sequences.fna database/abv'
+            '\n'
+        )
+        # 2. Execute Centrifuge on the index
+        # 2.1 Case single-end reads
+        if len(inputs) == 1:        
+            file.write(
+                f'centrifuge -x database/abv -U {seq1} '
+                '-S reports/centrifuge_output.txt -p 48'
+                '\n'
+            )
+        # 2.2 Case paired-end reads
+        elif len(inputs) == 2:  
+            file.write(
+                f'centrifuge -x database/abv -1 {seq1} -2 {seq2} '
+                '-S reports/centrifuge_output.txt -p 48'
+                '\n'
+            )
     
     # Return absolute path of the file
     return os.path.abspath('scripts/cen_script.sh')

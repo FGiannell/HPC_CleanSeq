@@ -22,44 +22,37 @@ async def buildRextractScript(
         seq1 = os.path.basename(inputs[0])
         seq2 = os.path.basename(inputs[1])
 
-    script = '#!/bin/bash' + '\n\n'
-
-    # Add directories
-    script += (
-        '#SBATCH --job-name=rextract\n'
-        '#SBATCH --time=24:00:00\n'
-        '#SBATCH -p g100_usr_prod \n'
-        '#SBATCH -N 1\n'
-        '#SBATCH -n 48 \n'
-        '#SBATCH --mem=100G \n'
-        f'#SBATCH --account {account}\n\n'
-    )
-
-    # Add instructions
-    # 1. Execute Recentrifuge
-    # 1.1 Case single-end reads
-    if len(inputs) == 1:  
-        script += (
-            f'rextract -f reports/centrifuge_output.txt -n taxonomy '
-            f'-q {seq1} -c -u -d'
-            '\n'
-        )
-    # 1.2 Case paired-end reads
-    elif len(inputs) == 2:
-        script += (
-            f'rextract -f reports/centrifuge_output.txt -n taxonomy '
-            f'-1 {seq1} -2 {seq2} -c -d'
-            '\n'
-        )
-    # 2. Move Recentrifuge output files in recentrifuge_reports directory
-    script += 'mv *rxtr* cleaned_sequences' + '\n'
-
-    # 3. Compress the directory
-    script += 'tar -czvf cleaned_sequences.tar.gz cleaned_sequences/' + '\n'
-
     # Write the script file
-    with open('scripts/rex_script.sh', 'w') as file:
-        file.write(script)
+    with open('scripts/rex_script.sh', 'w', newline='\n') as file:
+        file.write('#!/bin/bash' + '\n\n')
+
+        # Add directories
+        file.write(
+            '#SBATCH --job-name=rextract\n'
+            '#SBATCH --time=24:00:00\n'
+            '#SBATCH -p g100_usr_prod \n'
+            '#SBATCH -N 1\n'
+            '#SBATCH -n 48 \n'
+            '#SBATCH --mem=100G \n'
+            f'#SBATCH --account {account}\n\n'
+        )
+
+        # Add instructions
+        # 1. Execute Recentrifuge
+        # 1.1 Case single-end reads
+        if len(inputs) == 1:  
+            file.write(
+                f'rextract -f reports/centrifuge_output.txt -n taxonomy '
+                f'-q {seq1} -c -u -d'
+                '\n'
+            )
+        # 1.2 Case paired-end reads
+        elif len(inputs) == 2:
+            file.write(
+                f'rextract -f reports/centrifuge_output.txt -n taxonomy '
+                f'-1 {seq1} -2 {seq2} -c -u -d'
+                '\n'
+            )
     
     # Return absolute path of the file
     return os.path.abspath('scripts/rex_script.sh')
@@ -92,14 +85,21 @@ async def executeRextract(
             proc.stdin.write('cd $SCRATCH/dec' + '\n')
             await proc.stdin.drain()
 
-            # Import profile and modules and activate conda environment
+            # Import profile and modules and activate python environment
             proc.stdin.write('module load profile/bioinf' + '\n')
             await proc.stdin.drain()
             proc.stdin.write('module load autoload gcc' + '\n')
             await proc.stdin.drain()
-            proc.stdin.write('conda activate biocomp' + '\n')
+            proc.stdin.write('module load python/3.8.12--gcc--10.2.0' + '\n')
             await proc.stdin.drain()
-            print("Module loaded and conda environment activated")
+            proc.stdin.write('python3 -m venv recenv' + '\n')
+            await proc.stdin.drain()
+            proc.stdin.write('source recenv/bin/activate' + '\n')
+            await proc.stdin.drain()
+            proc.stdin.write('echo "$(pip install recentrifuge xlrd)$"' + '\n')
+            await proc.stdin.drain()
+            result = await proc.stdout.readuntil('$')
+            print("Module loaded and python environment activated")
 
             # Create cleaned_sequences directory
             proc.stdin.write('mkdir cleaned_sequences' + '\n')
@@ -221,21 +221,29 @@ async def downloadRextractSequences(
             # Navigate to $SCRATCH directory
             await sftp.chdir(scratch_dir)
             
-            # Print all the content of the scratch directory
-            ls = await sftp.listdir('.')
-            print(f"Content of the directory: \n{ls}")
-            
             # Navigate in the working directory
             print("Moving to dec directory")
             await sftp.chdir('dec')
 
+            # Print all the content of the scratch directory
+            ls = await sftp.listdir('.')
+            print(f"Content of the directory: \n{ls}")
+
+            # Get the names of the "cleaned" sequences
+            files = []
+            for file in ls:
+                if "rxtr" in file:
+                    files.append(file)
+                    print(file)
+
             # Download the cleaned_sequences directory
             print("Downloading the cleaned sequences")
-            await sftp.get(
-                'cleaned_sequences.tar.gz', 
-                'download/', 
-                progress_handler=downloadProgress
-            )
+            for file in files:
+                await sftp.get(
+                    file, 
+                    'download/', 
+                    progress_handler=downloadProgress
+                )
             print("OK")
 
     print("Cleaned sequences downloaded")

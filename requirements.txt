@@ -17,7 +17,6 @@ h11==0.14.0
 invoke==2.2.0
 itsdangerous==2.2.0
 Jinja2==3.1.4
-kiwisolver==1.4.5
 MarkupSafe==2.1.5
 openpyxl==3.1.2
 packaging==24.1
@@ -38,4 +37,4 @@ zope.event==5.0
 zope.interface==7.0.3
 cffi==1.17.1
 greenlet==3.1.1
-waitress==3.0.0
+kiwisolver==1.4.5

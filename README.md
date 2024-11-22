@@ -81,7 +81,7 @@ sudo pacman -S python
 To install HPC CLEANSEQ simply run the following commands:
 
 ```bash
-git clone https://github.com/FGiannell/HPC_CleanSeq.git
+git clone https://github.com/FGiannell/HPC_CleanSeq
 cd HPC_CLEANSEQ
 python install_requirements.py
 ```
@@ -111,12 +111,13 @@ make
 echo "Centrifuge compiled."
 
 echo "Creating the python virtual environment for recentrifuge ..."
+module load python/3.8.12--gcc--10.2.0
 python3 -m venv recenv
 source recenv/bin/activate
 echo "Python environment created successfully."
 
 echo "Installing Recentrifuge and Rextract in the python environment ..."
-pip install recentrifuge
+pip install recentrifuge xlrd 
 echo "Recentrifuge and Rextract installed successfully."
 ```
 
@@ -129,7 +130,7 @@ To start the software, once all the dependencies are installed, go to the HPC_CL
 Type the following command to start the software:
 
 ```bash
-waitress-serve --host=127.0.0.1 --port=3000 HPC_CleanSeq:app
+python3 HPC_CleanSeq.py
 ```
 
 And type the following url into your browser: 

@@ -9,28 +9,27 @@ from pyscripts.progress import uploadProgress, downloadProgress
 async def buildRecentrifugeScript(account: str):
     """Build script to execute Recentrifuge.
     """
-    script = '#!/bin/bash' + '\n\n'
-
-    # Add directories
-    script += (
-        '#SBATCH --job-name=recentrifuge\n'
-        '#SBATCH --time=24:00:00\n'
-        '#SBATCH -p g100_usr_prod \n'
-        '#SBATCH -N 1\n'
-        '#SBATCH -n 48 \n'
-        '#SBATCH --mem=100G \n'
-        f'#SBATCH --account {account}\n\n'
-    )
-    
-    # Add instructions
-    # 1. Execute Recentrifuge
-    script += 'rcf -f reports/centrifuge_output.txt -n taxonomy -e CSV' + '\n'
-    # 2. Move Recentrifuge output files in recentrifuge_reports directory
-    script += 'mv reports/*rcf* reports/recentrifuge_reports' + '\n'
 
     # Write the script file
-    with open('scripts/rec_script.sh', 'w') as file:
-        file.write(script)
+    with open('scripts/rec_script.sh', 'w', newline='\n') as file:
+        file.write('#!/bin/bash' + '\n\n')
+
+        # Add directories
+        file.write(
+            '#SBATCH --job-name=recentrifuge\n'
+            '#SBATCH --time=24:00:00\n'
+            '#SBATCH -p g100_usr_prod \n'
+            '#SBATCH -N 1\n'
+            '#SBATCH -n 48 \n'
+            '#SBATCH --mem=100G \n'
+            f'#SBATCH --account {account}\n\n'
+        )
+
+        # Add instructions
+        # 1. Execute Recentrifuge
+        file.write('rcf -f reports/centrifuge_output.txt -n taxonomy -e CSV' + '\n')
+        # 2. Move Recentrifuge output files in recentrifuge_reports directory
+        file.write('mv reports/*rcf* reports/recentrifuge_reports' + '\n')
     
     # Return absolute path of the file
     return os.path.abspath('scripts/rec_script.sh')
@@ -63,13 +62,20 @@ async def executeRecentrifuge(
             proc.stdin.write('cd $SCRATCH/dec' + '\n')
             await proc.stdin.drain()
 
-            # Import profile and modules and activate conda environment
+            # Import profile and modules and activate python environment
             proc.stdin.write('module load profile/bioinf' + '\n')
             await proc.stdin.drain()
             proc.stdin.write('module load autoload gcc' + '\n')
             await proc.stdin.drain()
+            proc.stdin.write('module load python/3.8.12--gcc--10.2.0' + '\n')
+            await proc.stdin.drain()
+            proc.stdin.write('python3 -m venv recenv' + '\n')
+            await proc.stdin.drain()
             proc.stdin.write('source recenv/bin/activate' + '\n')
             await proc.stdin.drain()
+            proc.stdin.write('echo "$(pip install recentrifuge xlrd)$"' + '\n')
+            await proc.stdin.drain()
+            result = await proc.stdout.readuntil('$')
             print("Module loaded and python environment activated")
 
             # Export $PATH to include centrifuge

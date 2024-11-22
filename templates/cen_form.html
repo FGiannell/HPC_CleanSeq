@@ -469,13 +469,13 @@
                     socketProgress.on('progress', function(data) {
                         // Update the width of the progress bar
                         $('.progress-bar').css('width', data.value + '%');
-
+                        
                         // Update the value of aria-valuenow property of the progress bar
                         $('.progress-bar').attr('aria-valuenow', data.value);
-
+                        
                         // Update percentage inside progress bar
                         $('.progress-bar').text(data.value + '%');
-
+                        
                         // Update the text of the modal
                         $('.stateText').text('State: ' + data.state);
                     });

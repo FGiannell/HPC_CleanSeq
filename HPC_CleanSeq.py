@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, flash, request, make_response, jsonify, send_file
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
+import zipfile
 import os
 import time
 from werkzeug.utils import secure_filename
@@ -336,17 +337,27 @@ async def submitRextract():
     progress = {'state': 'Downloading cleaned sequences', 'value': 100}
     time.sleep(3)
 
-    # Check if the file is present
-    if os.path.exists('download/cleaned_sequences.tar.gz'):
-        # Start download of the file
-        return send_file(
-            'download/cleaned_sequences.tar.gz', 
-            as_attachment = True, 
-            download_name = 'cleaned_sequences.tar.gz'
-        )
-    else:
-        # Send file not found error page
-        return jsonify({'error': 'File non trovato.'}), 404
+    # Check if the files are present
+    files = os.listdir('download')
+    rxtr_files = []
+
+    for file in files:
+        if 'rxtr' in file:
+            rxtr_files.append(f'download/{file}')
+
+    with zipfile.ZipFile('download/cleaned_sequences.zip', 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for file in rxtr_files:
+            zipf.write(file)
+
+    # Delete files after zip file creation
+    for file in rxtr_files:
+        os.remove(file)
+    
+    return send_file(
+        f'download/cleaned_sequences.zip', 
+        as_attachment = True, 
+        download_name = 'cleaned_sequences.zip'
+    )
 
 
 
