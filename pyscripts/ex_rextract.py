@@ -22,7 +22,7 @@ async def buildRextractScript(
         seq1 = os.path.basename(inputs[0])
         seq2 = os.path.basename(inputs[1])
 
-    # Write the script file
+    # Write script file
     with open('scripts/rex_script.sh', 'w', newline='\n') as file:
         file.write('#!/bin/bash' + '\n\n')
 
@@ -30,10 +30,10 @@ async def buildRextractScript(
         file.write(
             '#SBATCH --job-name=rextract\n'
             '#SBATCH --time=24:00:00\n'
-            '#SBATCH -p g100_usr_prod \n'
+            '#SBATCH -p g100_usr_bmem \n'
             '#SBATCH -N 1\n'
             '#SBATCH -n 48 \n'
-            '#SBATCH --mem=100G \n'
+            '#SBATCH --mem=500G \n'
             f'#SBATCH --account {account}\n\n'
         )
 
@@ -54,7 +54,7 @@ async def buildRextractScript(
                 '\n'
             )
     
-    # Return absolute path of the file
+    # Return absolute path of file
     return os.path.abspath('scripts/rex_script.sh')
 
 
@@ -96,7 +96,10 @@ async def executeRextract(
             await proc.stdin.drain()
             proc.stdin.write('source recenv/bin/activate' + '\n')
             await proc.stdin.drain()
-            proc.stdin.write('echo "$(pip install recentrifuge xlrd)$"' + '\n')
+            proc.stdin.write(
+                'echo "$(pip install recentrifuge xlrd)$"'
+                '\n'
+            )
             await proc.stdin.drain()
             result = await proc.stdout.readuntil('$')
             print("Module loaded and python environment activated")
@@ -225,11 +228,11 @@ async def downloadRextractSequences(
             print("Moving to dec directory")
             await sftp.chdir('dec')
 
-            # Print all the content of the scratch directory
+            # Print all the content of scratch directory
             ls = await sftp.listdir('.')
             print(f"Content of the directory: \n{ls}")
 
-            # Get the names of the "cleaned" sequences
+            # Get the names of "cleaned" sequences
             files = []
             for file in ls:
                 if "rxtr" in file:

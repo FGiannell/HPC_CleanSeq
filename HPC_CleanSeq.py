@@ -345,7 +345,11 @@ async def submitRextract():
         if 'rxtr' in file:
             rxtr_files.append(f'download/{file}')
 
-    with zipfile.ZipFile('download/cleaned_sequences.zip', 'w', zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(
+        'download/cleaned_sequences.zip', 
+        'w', 
+        zipfile.ZIP_DEFLATED
+    ) as zipf:
         for file in rxtr_files:
             zipf.write(file)
 

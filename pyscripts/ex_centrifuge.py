@@ -34,10 +34,10 @@ async def buildCentrifugeScript(
         file.write(
             '#SBATCH --job-name=centrifuge\n'
             '#SBATCH --time=24:00:00\n'
-            '#SBATCH -p g100_usr_prod \n'
+            '#SBATCH -p g100_usr_bmem \n'
             '#SBATCH -N 1\n'
             '#SBATCH -n 48 \n'
-            '#SBATCH --mem=100G \n'
+            '#SBATCH --mem=500G \n'
             f'#SBATCH --account {account}\n\n'
         )
 
@@ -199,32 +199,54 @@ async def executeCentrifuge(
             )
             await proc.stdin.drain()
             result = await proc.stdout.readuntil('$')
-            print(result[:-1])
             print("taxonomy downloaded")
 
             # Download sequences
-            print(f"Started library download ({dom})")         
-            proc.stdin.write(
-                f'echo "$(centrifuge-download -v -l -P 4 '
-                f'-o library -d "{dom}" '
-                'refseq > seqid2taxid.map)$"'
-                '\n'
-            )
-            await proc.stdin.drain()
-            result = await proc.stdout.readuntil('$')
-            print(result[:-1])
+            print(f"Started library download ({dom})")     
+            for i in range(len(domains)):
+                print(f"Downloading {domains[i]} sequences --> ", end="")
+                if i == 0:
+                    if domains[i] == 'bacteria':
+                        proc.stdin.write(
+                            f'centrifuge-download -l -P 48 '
+                            f'-o library -d "{domains[i]}" -a "Chromosome" '
+                            'refseq > seqid2taxid.map'
+                            '\n'
+                        )
+                    else:
+                        proc.stdin.write(
+                            f'centrifuge-download -l -P 48 '
+                            f'-o library -d "{domains[i]}" '
+                            'refseq > seqid2taxid.map'
+                            '\n'
+                        )
+                else:
+                    if domains[i] == 'bacteria':
+                        proc.stdin.write(
+                            f'centrifuge-download -l -P 48 '
+                            f'-o library -d "{domains[i]}" -a "Chromosome" '
+                            'refseq >> seqid2taxid.map'
+                            '\n'
+                        )
+                    else:
+                        proc.stdin.write(
+                            f'centrifuge-download -l -P 48 '
+                            f'-o library -d "{domains[i]}" '
+                            'refseq >> seqid2taxid.map'
+                            '\n'
+                        )
+                await proc.stdin.drain()
+                print("DONE")
             print("Library downloaded")                         
 
             # Concatenate all the downloaded sequences
-            print(f"Started sequences concatenation")           
+            print(f"Started sequences concatenation --> ", end="")           
             proc.stdin.write(
-                'echo $(cat library/*/*.fna > sequences.fna)$'
+                'cat library/*/*.fna > sequences.fna'
                 '\n'
             )
             await proc.stdin.drain()
-            result = await proc.stdout.readuntil('$')
-            print(result[:-1])
-            print("Sequences concatenated")                      
+            print("DONE")                      
 
             # Execute the centrifuge script
             print("Started running Centrifuge script")        
@@ -240,8 +262,8 @@ async def executeCentrifuge(
 
             print(f"JobID = {job_ID}")
             
-            print("Waiting for the centrifuge job to be finished")
             # Wait for the job to be finished
+            print("Waiting for the centrifuge job to be finished")
             while True:
                 proc.stdin.write(
                     f'echo $(squeue -j {job_ID} --format="%T" -h)$'
@@ -253,7 +275,7 @@ async def executeCentrifuge(
 
                 print(
                     f"\rJobId = {job_ID}: state -> {state}", 
-                    end='',
+                    end="",
                     flush=True
                 )
 

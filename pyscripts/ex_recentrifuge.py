@@ -9,7 +9,6 @@ from pyscripts.progress import uploadProgress, downloadProgress
 async def buildRecentrifugeScript(account: str):
     """Build script to execute Recentrifuge.
     """
-
     # Write the script file
     with open('scripts/rec_script.sh', 'w', newline='\n') as file:
         file.write('#!/bin/bash' + '\n\n')
@@ -18,18 +17,24 @@ async def buildRecentrifugeScript(account: str):
         file.write(
             '#SBATCH --job-name=recentrifuge\n'
             '#SBATCH --time=24:00:00\n'
-            '#SBATCH -p g100_usr_prod \n'
+            '#SBATCH -p g100_usr_bmem \n'
             '#SBATCH -N 1\n'
             '#SBATCH -n 48 \n'
-            '#SBATCH --mem=100G \n'
+            '#SBATCH --mem=500G \n'
             f'#SBATCH --account {account}\n\n'
         )
 
         # Add instructions
         # 1. Execute Recentrifuge
-        file.write('rcf -f reports/centrifuge_output.txt -n taxonomy -e CSV' + '\n')
+        file.write(
+            'rcf -f reports/centrifuge_output.txt -n taxonomy -e CSV'
+            '\n'
+        )
         # 2. Move Recentrifuge output files in recentrifuge_reports directory
-        file.write('mv reports/*rcf* reports/recentrifuge_reports' + '\n')
+        file.write(
+            'mv reports/*rcf* reports/recentrifuge_reports'
+            '\n'
+        )
     
     # Return absolute path of the file
     return os.path.abspath('scripts/rec_script.sh')
